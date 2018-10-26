@@ -62,10 +62,10 @@ namespace Beispiel.Tests
 
             // Assert
             actual.ShouldNotBeNull();
-            actual.Count.ShouldBe(expected: 3);
+            actual.Count.ShouldBe(expected: 2);
 
             _mockProtokollierer.Verify(
-                expression: v => v.ProtokolliereInformation("3 Kunden gefunden"),
+                expression: v => v.ProtokolliereInformation("2 Kunden gefunden"),
                 times: Times.Once);
         }
 
