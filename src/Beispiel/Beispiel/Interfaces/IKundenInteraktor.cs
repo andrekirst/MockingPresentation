@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Beispiel.Interfaces
 {
-    public interface IKundenInteractor
+    public interface IKundenInteraktor
     {
         List<Kunde> SucheKunden(string filter);
     }

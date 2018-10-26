@@ -7,7 +7,7 @@
 1. Referenz von Test-Projekt `MockingBeispiel.Tests` zu `MockingBeispiel` erstellen.
 1. Wechsel zum Projekt `MockingBeispiel`.
 1. Ordner "Interfaces" in Projekt erstellen.
-1. Um mit dem System zu interagieren, brauchen wir als erstes einen Interactor. Dies implementieren wir zunächst als Schnittstelle. Warum wir dies tun, wird später erläutert. Erstellen einer Schnittstelle für `IKundenInteraktor`.
+1. Um mit dem System zu interagieren, brauchen wir als erstes einen Interaktor. Dies implementieren wir zunächst als Schnittstelle. Warum wir dies tun, wird später erläutert. Erstellen einer Schnittstelle für `IKundenInteraktor`.
     ```csharp
     public interface IKundenInteraktor
     {
@@ -146,6 +146,10 @@
     Install-Package Moq -ProjectName MockingBeispiel.Tests
     ```
 1. Warten, bis alls abhängigen Pakete installiert sind
+1. Um die Tests lesbarer zu machen, installieren wir auch das NuGet-Package [Shouldly](https://github.com/shouldly/shouldly):
+    ```powershell
+    Install-Package Shouldly -ProjectName MockingBeispiel.Tests
+    ```
 1. Im Test-Projekt `MockingBeispiel.Tests` nun folgende Test-Klasse erstellen: `KundenInteraktorTests`. Diese muss nun folgendermaßen aussehen:
     ```csharp
     using System;
@@ -163,3 +167,200 @@
         }
     }
     ```
+1. Im nächsten Schritt müssen wir unser "System" (`KundenInteraktor`), das wir testen wollen, für die Simulierung der anderen Systeme (Datenspeicher, Protokollierer) vorbereiten. Dazu müssen wir die Schnittstellen `IKundenDatenspeicher` und `IProtokollierer` mocken und dem `KundenInteraktor` übergeben. Dies tun wir im Konstruktor der Testklasse `KundenInteraktorTests`. Die Datei muss nun folgendermaßen aussehen:
+    ```csharp
+    using MockingBeispiel_20181019.Interfaces;
+    using MockingBeispiel_20181019.Implementations;
+    using System;
+    using Moq;
+    using Xunit;
+
+    namespace MockingBeispiel_20181019.Tests
+    {
+        public class KundenInteraktorTests
+        {
+            private readonly KundenInteraktor _systemUnderTest;
+            private readonly Mock<IKundenDatenspeicher> _mockKundenDatenspeicher;
+            private readonly Mock<IProtokollierer> _mockProtokollierer;
+
+            public KundenInteraktorTests()
+            {
+                _mockKundenDatenspeicher = new Mock<IKundenDatenspeicher>();
+                _mockProtokollierer = new Mock<IProtokollierer>();
+
+                _systemUnderTest = new KundenInteraktor(
+                    kundenDatenspeicher: _mockKundenDatenspeicher.Object,
+                    protokollierer: _mockProtokollierer.Object);
+            }
+
+            [Fact(DisplayName = "Datenspeicher gibt 0 Datensaetze zurück. Erwarte leere Liste und protokolliere Informationsmeldung \"Keine Kunden gefunden\".")]
+            public void Datenspeicher_gibt_0_Datensaetze_zurueck_Erwarte_leere_Liste_und_protokolliere_Informationsmeldung()
+            {
+                throw new NotImplementedException();
+            }
+        }
+    }
+    ```
+1. Nun wollen wir den ersten Test mit folgenden Anforderungen implementieren, wenn die Suche 0 Datensätze zurückgibt:
+    1. Gebe leere Liste zurück
+    1. Protokolliere "Keine Kunden gefunden"
+1. Der Test muss nun folgenermaßen aussehen:
+    ```csharp
+    public void Datenspeicher_gibt_0_Datensaetze_zurueck_Erwarte_leere_Liste_und_protokolliere_Informationsmeldung()
+    {
+        // Arrange
+        _mockKundenDatenspeicher
+            .Setup(expression: s => s.SucheKunden(It.IsAny<string>()))
+            .Returns(value: new List<Kunde>());
+
+        // Act
+        List<Kunde> actual = _systemUnderTest.SucheKunden(filter: null);
+
+        // Assert
+        actual.ShouldNotBeNull();
+        actual.ShouldBeEmpty();
+
+        _mockProtokollierer.Verify(
+            expression: v => v.ProtokolliereInformation("Keine Kunden gefunden"),
+            times: Times.Once);
+    }
+    ```
+    1. Arrange
+        1. Mit der Methode `Setup` kann man einen Ausdruch angeben, der ausgeführt werden soll. Die Methode `Returns` gibt dann an, welcher Wert dafür zurückgegeben werden soll. Dies ist die "Simulierung".
+    1. Act
+        1. Hier die eigentliche Funktion aufgerufen
+    1. Assert
+        1. Als erstes überprüfen wir mit `actual.ShouldNotBeNull();`, dass der Wert in `actual` nicht `null` ist.
+        1. Danach testen wir mit `actual.ShouldBeEmpty();`, dass die Liste, die zurückgegeben wurde, leer ist.
+        1. Zuletzt überprüfen wir, dass die Meldung "Keine Kunden gefunden" protokolliert wurde. Dazu nutzen wir die Methode `Verify` des Mocking-Objektes für `IProtokollierer`.
+            1. Der Parameter `expression` gibt an, welches Ausdruck überprüft werden soll.
+            1. Der Parameter `times` gibt an, wie oft der Ausdruck gelaufen sein muss. In diesem Fall ein mal.
+1. Wenn wir den Test im "Test-Explorer" laufen lassen, erscheint in der Meldung des Testes folgender Test: *Message: System.NotImplementedException : The method or operation is not implemented.*. Dies kommt daher, dass die Methode `KundenInteraktor.SucheKunden(string filter)` noch die Ausnahme `NotImplementedException` geworfen wird. Dies wollen wir nun ändern, in dem wir die Implementierung anpassen. Damit der Code grün und "TDD-Konform" ist, sollte die Methode für `KundenInteraktor.SucheKunden(string filter)` folgendermaßen aussehen:
+    ```csharp
+    public List<Kunde> SucheKunden(string filter)
+    {
+        _protokollierer.ProtokolliereInformation(meldung: "Keine Kunden gefunden");
+        return _kundenDatenspeicher.SucheKunden(filter: filter);
+    }
+    ```
+1. Wenn wir den Test nun noch einmal ausführen, wird er grün.
+1. Nun wollen wir den nächsten Test implementieren, wenn die suche beispielsweise 2 Datensätze zurückgibt:
+    1. Liste mit 2 Datensätzen
+    1. Protokolliere "2 Kunden gefunden"
+1. Der Test muss nun folgendermaßen aussehen:
+    ```csharp
+    [Fact(DisplayName = "Datenspeicher gibt 2 Datensaetze zurück. Erwarte Liste mit 2 Datensätzen und protokolliere Informationsmeldung \"2 Kunden gefunden\".")]
+    public void Datenspeicher_gibt_2_Datensaetze_zurueck_Erwarte_Liste_mit_2_Datensaetzen_und_protokolliere_Meldung()
+    {
+        // Arrange
+        _mockKundenDatenspeicher
+            .Setup(expression: s => s.SucheKunden(It.IsAny<string>()))
+            .Returns(value: new List<Kunde>()
+            {
+                new Kunde { Id = 1, Name = "Kunde 1" },
+                new Kunde { Id = 2, Name = "Kunde 2" }
+            });
+
+        // Act
+        List<Kunde> actual = _systemUnderTest.SucheKunden(filter: null);
+
+        // Assert
+        actual.ShouldNotBeNull();
+        actual.Count.ShouldBe(expected: 2);
+
+        _mockProtokollierer.Verify(
+            expression: v => v.ProtokolliereInformation("2 Kunden gefunden"),
+            times: Times.Once);
+    }
+    ```
+1. Folgende Dinge haben wir nun zum vorherigen Test geändert
+    1. Es werden aus dem KundenDatenspeicher keine Einträge mehr geliefert, sondern jetzt 2 Kunden.
+    1. Die Anzahl der Einträge sollte **2** betragen: `actual.Count.ShouldBe(expected: 2);`
+    1. Es soll jetzt "2 Kunden gefunden" protokolliert werden.
+1. Wenn wir jetzt alle Tests ausführen, ist der erste Test, den wir geschrieben haben, weiterhin grün. Aber der neu erstellte Test rot.
+1. Nun müssen wir den Test grün bekommen und die Methode `KundenInteraktor.SucheKunden(string filter)` anpassen. Sie muss nun folgenermaßen aussehen:
+    ```csharp
+    public List<Kunde> SucheKunden(string filter)
+    {
+        List<Kunde> gefundeneKunden = _kundenDatenspeicher.SucheKunden(filter: filter);
+        if (gefundeneKunden.Any())
+        {
+            _protokollierer.ProtokolliereInformation(meldung: $"{gefundeneKunden.Count} Kunden gefunden");
+        }
+        else
+        {
+            _protokollierer.ProtokolliereInformation(meldung: "Keine Kunden gefunden");
+        }
+        return gefundeneKunden;
+    }
+    ```
+1. Wenn wir alle Tests ausführen, sind nun beide Tests grün. Nun können wir in diesem Schritt einmal den Code umgestalten. Dies könnte so aussehen:
+    ```csharp
+    public List<Kunde> SucheKunden(string filter)
+    {
+        List<Kunde> gefundeneKunden = _kundenDatenspeicher.SucheKunden(filter: filter);
+        _protokollierer.ProtokolliereInformation(meldung:
+            gefundeneKunden.Any()
+            ? $"{gefundeneKunden.Count} Kunden gefunden"
+            : "Keine Kunden gefunden");
+        return gefundeneKunden;
+    }
+    ```
+1. Nochmaliges ausführen aller Tests bringt die Gewissheit, der Code funktioniert immer noch, wie die Tests es vorgeben.
+1. Nun zum letzten Test, wenn ein Fehler im KundenDatenspeicher auftritt
+    1. Leere Liste zurückgeben
+    1. Fehlermeldung "Es ist ein Fehler aufgetreten" protokollieren
+1. Dieser Test muss nun folgendermaßen aussehen:
+    ```csharp
+    [Fact(DisplayName = "Datenspeicher wirft einen Fehler. Erwarte leere Liste und protokolliere Fehlermeldung \"Es ist ein Fehler aufgetreten\".")]
+    public void Datenspeicher_wirft_Fehler_Erwarte_leere_Liste_und_protokolliere_Fehlermeldung()
+    {
+        // Arrange
+        _mockKundenDatenspeicher
+            .Setup(expression: s => s.SucheKunden(It.IsAny<string>()))
+            .Throws<Exception>();
+
+        // Act
+        List<Kunde> actual = _systemUnderTest.SucheKunden(filter: null);
+
+        // Assert
+        actual.ShouldNotBeNull();
+        actual.ShouldBeEmpty();
+
+        _mockProtokollierer.Verify(
+            expression: v => v.ProtokolliereFehler("Es ist ein Fehler aufgetreten"),
+            times: Times.Once);
+    }
+    ```
+1. Alle Tests ausführen führt dazu, dass der neue Test fehlschlägt. Das heißt, wir müssen wieder die Implementierung von `KundenInteraktor.SucheKunden(string filter)` anpassen. Die Implementierung würde nun folgendermaßen aussehen:
+    ```csharp
+    public List<Kunde> SucheKunden(string filter)
+    {
+        try
+        {
+            List<Kunde> gefundeneKunden = _kundenDatenspeicher.SucheKunden(filter: filter);
+            _protokollierer.ProtokolliereInformation(meldung:
+                gefundeneKunden.Any()
+                ? $"{gefundeneKunden.Count} Kunden gefunden"
+                : "Keine Kunden gefunden");
+            return gefundeneKunden;
+        }
+        catch
+        {
+            _protokollierer.ProtokolliereFehler(meldung: "Es ist ein Fehler aufgetreten");
+        }
+
+        return new List<Kunde>();
+    }
+    ```
+1. Ein erneutes ausführen aller Tests führt dazu, dass nun alle Tests grün sind.
+
+## Weiterführung des Beispieles mit Implementierungen des Datenspeichers und Protokollierers
+
+:information_source: **Vorbereitung:**
+
+Als Vorbereitung für die Implementierungen, muss für das Beispiel das NuGet-Package [Autofac](https://github.com/autofac/Autofac). Dieses Framework dient zur Umsetzung des Inversion of Control-Prinzipes unter Einsatz von Dependency Injection.
+
+### Datenspeicher aus festen Daten
+
+1. Im Projekt für `MockingBeispiel` erstellen wir im Ordner `Implementations` die Klasse

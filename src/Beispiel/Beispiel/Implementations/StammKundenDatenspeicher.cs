@@ -12,9 +12,9 @@ namespace Beispiel.Implementations
         {
             return new List<Kunde>
             {
-                new Kunde { Id= Guid.NewGuid().ToString(), Name = "Karla Kolumna" },
-                new Kunde { Id= Guid.NewGuid().ToString(), Name = "Tierpfleger Karl" },
-                new Kunde { Id= Guid.NewGuid().ToString(), Name = "Benjamin Blümchen" }
+                new Kunde { Id= 1, Name = "Karla Kolumna" },
+                new Kunde { Id= 2, Name = "Tierpfleger Karl" },
+                new Kunde { Id= 3, Name = "Benjamin Blümchen" }
             }
             .Where(predicate: p => p.Name.ToLower().Contains(value: filter.ToLower()))
             .ToList();

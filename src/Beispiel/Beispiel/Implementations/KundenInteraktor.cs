@@ -5,12 +5,12 @@ using System.Linq;
 
 namespace Beispiel.Implementations
 {
-    public class KundenInteractor : IKundenInteractor
+    public class KundenInteraktor : IKundenInteraktor
     {
         private readonly IKundenDatenspeicher _kundenDatenspeicher;
         private readonly IProtokollierer _protokollierer;
 
-        public KundenInteractor(
+        public KundenInteraktor(
             IKundenDatenspeicher kundenDatenspeicher,
             IProtokollierer protokollierer)
         {

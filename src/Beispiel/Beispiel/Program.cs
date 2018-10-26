@@ -16,8 +16,8 @@ namespace Beispiel
             ContainerBuilder containerBuilder = new ContainerBuilder();
             containerBuilder.RegisterModule<LogRequestsModule>();
             containerBuilder
-                .RegisterType<KundenInteractor>()
-                .As<IKundenInteractor>();
+                .RegisterType<KundenInteraktor>()
+                .As<IKundenInteraktor>();
             containerBuilder
                 .RegisterType<JsonKundenDatenspeicher>()
                 .As<IKundenDatenspeicher>();
@@ -28,9 +28,9 @@ namespace Beispiel
                 .RegisterType<FileSystem>()
                 .As<IFileSystem>();
 
-            IKundenInteractor kundenInteractor = containerBuilder
+            IKundenInteraktor kundenInteractor = containerBuilder
                 .Build()
-                .Resolve<IKundenInteractor>();
+                .Resolve<IKundenInteraktor>();
 
             foreach (Kunde kunde in kundenInteractor.SucheKunden(filter: ""))
             {
