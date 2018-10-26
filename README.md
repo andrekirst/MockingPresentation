@@ -465,3 +465,17 @@ Install-Package Autofac -ProjectName MockingBeispiel
         Fertsch
         ```
 1. Nun sind wir in der Lage, weitere Implementierungen für `IKundenDatenspeicher` und `IProtokollierer` zu erstellen, ohne die Implementierung von `KundenInteraktor` anzupassen. Die Daten für den Datenspeicher können nun aus einer Datenbank kommen, aus einer JSON-Datei, aus einer externen API, etc. Das selbe gilt für den Protokollierer. Ausgabe in verschiedenen Farben auf der Konsole, Datei-Ausgabe, Windows-Ereignis, Nutzung einer externen Komponente (z.B. NLog, log4net, etc.) ist nun möglich. Zur Wiederholung: Ohne Anpassung der Implementierung von `KundenInteraktor`.
+
+## Dateien und Quellcode
+
+* Im Ordner **presentation** liegt die PowerPoint-Präsentation
+* Das in dieser Anleitung durchgeführte Beispiel liegt im Ordner `/src/Beispiel`
+* Das Beispiel mit dem Licht liegt im Ordner `/src/BeispielDependencyInversionMitLicht`
+
+## Abschluss
+
+Wünsche und Anregungen gerne als Issue erfassen. Nichts ist natürlich perfekt. Aber ich hoffe, ich konnt ein wenig zu diesem sehr interessanten Thema beitragen.
+
+Dynamische Grüße
+
+ENDE
