@@ -275,7 +275,11 @@
     ```
 1. Folgende Dinge haben wir nun zum vorherigen Test geändert
     1. Es werden aus dem KundenDatenspeicher keine Einträge mehr geliefert, sondern jetzt 2 Kunden.
-    1. Die Anzahl der Einträge soll **2** betragen: `actual.Count.ShouldBe(expected: 2);` (:warning: Dies ist natürlich nur ein "weicher" Test. Es empfiehlt sich die Objekte miteinander zu vergleichen. Ist aber nicht Inhalt dieser Anleitung. Siehe [Definieren von Wertgleichheit für einen Typ](https://docs.microsoft.com/de-de/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type))
+    1. Die Anzahl der Einträge soll **2** betragen:
+    ```csharp
+    actual.Count.ShouldBe(expected: 2);
+    ```
+    :warning: Dies ist natürlich nur ein "weicher" Test. Es empfiehlt sich die Objekte miteinander zu vergleichen. Ist aber nicht Inhalt dieser Anleitung. Siehe [Definieren von Wertgleichheit für einen Typ](https://docs.microsoft.com/de-de/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type)
     1. Es soll jetzt "2 Kunden gefunden" protokolliert werden.
 1. Wenn wir jetzt alle Tests ausführen, ist der erste Test, den wir geschrieben haben, weiterhin grün. Aber der neu erstellte Test rot.
 1. Nun müssen wir den Test grün bekommen und die Methode `KundenInteraktor.SucheKunden(string filter)` anpassen. Sie muss nun folgenermaßen aussehen:
