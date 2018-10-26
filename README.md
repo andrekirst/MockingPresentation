@@ -361,6 +361,107 @@
 
 Als Vorbereitung für die Implementierungen, muss für das Beispiel das NuGet-Package [Autofac](https://github.com/autofac/Autofac). Dieses Framework dient zur Umsetzung des Inversion of Control-Prinzipes unter Einsatz von Dependency Injection.
 
-### Datenspeicher aus festen Daten
+```powershell
+Install-Package Autofac -ProjectName MockingBeispiel
+```
 
-1. Im Projekt für `MockingBeispiel` erstellen wir im Ordner `Implementations` die Klasse
+1. Im Projekt für `MockingBeispiel` erstellen wir im Ordner `Implementations` die Klasse `StammKundenDatenspeicher` und implementieren diese mit der Schnittstelle `IKundenDatenspeicher`. Die Datei könnte folgendermaßen aussehen:
+    ```csharp
+    using System.Collections.Generic;
+    using System.Linq;
+    using MockingBeispiel.Interfaces;
+    using MockingBeispiel.Models;
+
+    namespace MockingBeispiel.Implementations
+    {
+        public class StammKundenDatenspeicher : IKundenDatenspeicher
+        {
+            public List<Kunde> SucheKunden(string filter)
+            {
+                return new List<Kunde>
+                {
+                    new Kunde { Id= 1, Name = "Karla Kolumna" },
+                    new Kunde { Id= 2, Name = "Tierpfleger Karl" },
+                    new Kunde { Id= 3, Name = "Benjamin Blümchen" }
+                }
+                .Where(predicate: p => p.Name.ToLower().Contains(value: filter.ToLower()))
+                .ToList();
+            }
+        }
+    }
+    ```
+1. Als nächstes erstellen wir im Ordner eine Implementierung für `IProtokollierer` mit dem Klassenname `KonsolenProtokollierer`. Die Datei könnte folgendermaßen aussehen:
+    ```csharp
+    using System;
+    using MockingBeispiel.Interfaces;
+
+    namespace MockingBeispiel.Implementations
+    {
+        public class KonsolenProtokollierer : IProtokollierer
+        {
+            public void ProtokolliereInformation(string meldung)
+            {
+                Console.WriteLine(value: meldung);
+            }
+
+            public void ProtokolliereFehler(string meldung)
+            {
+                Console.WriteLine(value: meldung);
+            }
+        }
+    }
+    ```
+1. Im nächsten Schritt wollen wir die einzelnen Module "zusammenbauen" und mal etwas sehen :smirk:. Dazu gehen wir zur `Main`-Methode in der Datei `Program.cs`. Der Code könnte folgendermaßen aussehen:
+    ```csharp
+    using System;
+    using Autofac;
+    using MockingBeispiel.Implementations;
+    using MockingBeispiel.Interfaces;
+    using MockingBeispiel.Models;
+
+    namespace MockingBeispiel
+    {
+        public static class Program
+        {
+            public static void Main(string[] args)
+            {
+                ContainerBuilder containerBuilder = new ContainerBuilder();
+                containerBuilder
+                    .RegisterType<KundenInteraktor>()
+                    .As<IKundenInteraktor>();
+                containerBuilder
+                    .RegisterType<KonsolenProtokollierer>()
+                    .As<IProtokollierer>();
+                containerBuilder
+                    .RegisterType<StammKundenDatenspeicher>()
+                    .As<IKundenDatenspeicher>();
+
+                IKundenInteraktor kundenInteraktor = containerBuilder
+                    .Build()
+                    .Resolve<IKundenInteraktor>();
+
+                foreach (Kunde kunde in kundenInteraktor.SucheKunden(filter: ""))
+                {
+                    Console.WriteLine(value: $"{kunde.Id} - {kunde.Name}");
+                }
+
+                Console.WriteLine(value: "Fertsch");
+                Console.ReadKey();
+            }
+        }
+    }
+    ```
+    Erläuterung:
+    1. Die Klasse `ContainerBuilder` dient dazu, die einzelnen Schnittstellen und Implementierungen zu registrieren.
+    1. Die Methode `RegisterType<TImplementer>` gibt an, welche Implementierung genutzt werden soll.
+    1. Die Methode `As<TService>` gibt an, welche Schnittstelle genutzt werden soll.
+    1. Die Methode `Build` "baut" die registrierten Komponenten und die Methode `Resolve<TService>` löst die Implementierung automatisch auf.
+    1. Zuletzt wird die Suche ausgeführt und durch die Liste iteriert und ausgegeben. Die Konsole sollte nun folgendes ausgeben:
+        ```bash
+        3 Kunden gefunden
+        1 - Karla Kolumna
+        2 - Tierpfleger Karl
+        3 - Benjamin Blümchen
+        Fertsch
+        ```
+1. Nun sind wir in der Lage, weitere Implementierungen für `IKundenDatenspeicher` und `IProtokollierer` zu erstellen, ohne die Implementierung von `KundenInteraktor` anzupassen. Die Daten für den Datenspeicher können nun aus einer Datenbank kommen, aus einer JSON-Datei, aus einer externen API, etc. Das selbe gilt für den Protokollierer. Ausgabe in verschiedenen Farben auf der Konsole, Datei-Ausgabe, Ereignisse, Nutzung einer externen Komponente (z.B. NLog, log4net, etc.) ist nun möglich. Zur Wiederholung: Ohne Anpassung der Implementierung von `KundenInteraktor`.
