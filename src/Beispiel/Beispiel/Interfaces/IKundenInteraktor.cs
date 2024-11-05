@@ -1,10 +1,9 @@
 using Beispiel.Models;
 using System.Collections.Generic;
 
-namespace Beispiel.Interfaces
+namespace Beispiel.Interfaces;
+
+public interface IKundenInteraktor
 {
-    public interface IKundenInteraktor
-    {
-        List<Kunde> SucheKunden(string filter);
-    }
+    List<Kunde> SucheKunden(string filter);
 }

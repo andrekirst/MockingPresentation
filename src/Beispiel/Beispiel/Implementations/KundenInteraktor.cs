@@ -3,39 +3,30 @@ using Beispiel.Interfaces;
 using Beispiel.Models;
 using System.Linq;
 
-namespace Beispiel.Implementations
+namespace Beispiel.Implementations;
+
+public class KundenInteraktor(
+    IKundenDatenspeicher kundenDatenspeicher,
+    IProtokollierer protokollierer)
+    : IKundenInteraktor
 {
-    public class KundenInteraktor : IKundenInteraktor
+    public List<Kunde> SucheKunden(string filter = "")
     {
-        private readonly IKundenDatenspeicher _kundenDatenspeicher;
-        private readonly IProtokollierer _protokollierer;
-
-        public KundenInteraktor(
-            IKundenDatenspeicher kundenDatenspeicher,
-            IProtokollierer protokollierer)
+        try
         {
-            _kundenDatenspeicher = kundenDatenspeicher;
-            _protokollierer = protokollierer;
+            var kunden = kundenDatenspeicher.SucheKunden(filter);
+
+            protokollierer.ProtokolliereInformation(kunden.Any()
+                ? $"{kunden.Count} Kunden gefunden"
+                : "Keine Kunden gefunden");
+
+            return kunden;
+        }
+        catch
+        {
+            protokollierer.ProtokolliereFehler("Es ist ein Fehler aufgetreten");
         }
 
-        public List<Kunde> SucheKunden(string filter)
-        {
-            try
-            {
-                List<Kunde> kunden = _kundenDatenspeicher.SucheKunden(filter: filter);
-
-                _protokollierer.ProtokolliereInformation(meldung: kunden.Any()
-                    ? $"{kunden.Count} Kunden gefunden"
-                    : "Keine Kunden gefunden");
-
-                return kunden;
-            }
-            catch
-            {
-                _protokollierer.ProtokolliereFehler(meldung: "Es ist ein Fehler aufgetreten");
-            }
-
-            return new List<Kunde>();
-        }
+        return new List<Kunde>();
     }
 }

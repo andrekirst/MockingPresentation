@@ -1,9 +1,8 @@
-namespace Beispiel.Interfaces
-{
-    public interface IProtokollierer
-    {
-        void ProtokolliereInformation(string meldung);
+namespace Beispiel.Interfaces;
 
-        void ProtokolliereFehler(string meldung);
-    }
+public interface IProtokollierer
+{
+    void ProtokolliereInformation(string meldung);
+
+    void ProtokolliereFehler(string meldung);
 }
