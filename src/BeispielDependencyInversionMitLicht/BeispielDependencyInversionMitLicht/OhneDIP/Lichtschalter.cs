@@ -1,22 +1,16 @@
-namespace BeispielDependencyInversionMitLicht.OhneDIP
+namespace BeispielDependencyInversionMitLicht.OhneDIP;
+
+public class Lichtschalter
 {
-    public class Lichtschalter
+    private readonly Gluehlampenlicht _gluehlampenlicht = new();
+
+    public void An()
     {
-        private readonly Gluehlampenlicht _gluehlampenlicht;
+        Gluehlampenlicht.An();
+    }
 
-        public Lichtschalter()
-        {
-            _gluehlampenlicht = new Gluehlampenlicht();
-        }
-
-        public void An()
-        {
-            _gluehlampenlicht.An();
-        }
-
-        public void Aus()
-        {
-            _gluehlampenlicht.Aus();
-        }
+    public void Aus()
+    {
+        _gluehlampenlicht.Aus();
     }
 }

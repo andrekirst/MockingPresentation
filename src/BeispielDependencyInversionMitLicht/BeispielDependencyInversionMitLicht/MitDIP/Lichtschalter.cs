@@ -1,22 +1,14 @@
-namespace BeispielDependencyInversionMitLicht.MitDIP
+namespace BeispielDependencyInversionMitLicht.MitDIP;
+
+public class Lichtschalter(ILichtmodul lichtmodul)
 {
-    public class Lichtschalter
+    public void An()
     {
-        private readonly ILichtmodul _lichtmodul;
+        lichtmodul.An();
+    }
 
-        public Lichtschalter(ILichtmodul lichtmodul)
-        {
-            _lichtmodul = lichtmodul;
-        }
-
-        public void An()
-        {
-            _lichtmodul.An();
-        }
-
-        public void Aus()
-        {
-            _lichtmodul.Aus();
-        }
+    public void Aus()
+    {
+        lichtmodul.Aus();
     }
 }

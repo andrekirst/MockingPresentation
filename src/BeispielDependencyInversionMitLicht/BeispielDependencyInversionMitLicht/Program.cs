@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace BeispielDependencyInversionMitLicht
+namespace BeispielDependencyInversionMitLicht;
+
+public static class Program
 {
-    class Program
+    private static void Main()
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello World!");
-        }
+        Console.WriteLine("Hello World!");
     }
 }

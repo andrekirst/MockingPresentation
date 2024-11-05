@@ -1,8 +1,7 @@
-namespace BeispielDependencyInversionMitLicht.MitDIP
+namespace BeispielDependencyInversionMitLicht.MitDIP;
+
+public interface ILichtmodul
 {
-    public interface ILichtmodul
-    {
-        void An();
-        void Aus();
-    }
+    void An();
+    void Aus();
 }
